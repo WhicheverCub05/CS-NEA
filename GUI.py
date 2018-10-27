@@ -2,11 +2,18 @@ from tkinter import *
 
 root = Tk()
 
-one = Label(root, text='one', bg='red', fg='white')
-one.pack()
-two = Label(root, text='two', bg='green', fg='black')
-two.pack(fill=X)
-three = Label(text='three', bg='blue', fg='white')
-three.pack(side=LEFT, fill=Y)
+label1 = Label(root, text='name: ')
+label2 = Label(root, text='password: ')
+entry1 = Entry(root)
+entry2 = Entry(root)
+
+label1.grid(row=0, column=0, sticky=E)
+label2.grid(row=1, column=0, sticky=E)
+
+entry1.grid(row=0, column=1)
+entry2.grid(row=1, column=1)
+
+checkbox = Checkbutton(root, text='Stay logged in?')
+checkbox.grid(columnspan=2)
 
 root.mainloop()  # to keep window open
