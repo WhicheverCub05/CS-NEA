@@ -21,7 +21,7 @@ file = []
 num_samples = sample_rate
 sampling_rate = sample_rate
 num = num_samples*2
-
+i = 0
 
 class MainClass:
 
@@ -40,13 +40,13 @@ class MainClass:
 
     def play_rec(self, sinewave, i):
         print("playing", frequencyList[i], "hz and recording")
-        recording = sd.playrec(sinewave(), sample_rate, channels=1, dtype='int32')
+        recording = sd.playrec(MainClass.sinewave(self), sample_rate, channels=1, dtype='int32')
         sd.wait()
         return recording
 
     def plot_graph(self, play_rec, sinewave):
         for i in range(len(frequencyList)):
-            wav.write(file[i], sample_rate, play_rec(sinewave()))
+            wav.write(file[i], sample_rate, MainClass().play_rec(MainClass.sinewave(self), i))
             rec = wave.open(file[i], 'r')
             data = rec.readframes(num_samples)  # was num_samples
             rec.close()
@@ -70,6 +70,16 @@ class MainClass:
             os.remove(file[i])
 
 
+def default_run():
+    for i in range(len(frequencyList)):
+        MainClass().frequency_list()
+        MainClass().sinewave()
+        MainClass().play_rec(MainClass().sinewave(), i)
+        # MainClass().plot_graph(MainClass().sinewave(), MainClass().play_rec(MainClass().sinewave(), i))
+        i = i+1
+
+
+default_run()
 
 '''
 for i in range(len(frequencyList)):
