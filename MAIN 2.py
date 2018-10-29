@@ -37,7 +37,7 @@ def sinewave():
     return sine
 
 
-def play_rec(sine):
+def play_rec(sine, i):
     print("playing", frequency[i], "hz and recording")
     recording = sd.playrec(sinewave(), sample_rate, channels=1, dtype='int32')
     sd.wait()
@@ -45,7 +45,7 @@ def play_rec(sine):
 
 
 for i in range(len(frequency)):
-    wav.write(file[i], sample_rate, play_rec(sinewave()))
+    wav.write(file[i], sample_rate, play_rec(sinewave(), i))
     rec = wave.open(file[i], 'r')
     data = rec.readframes(num_samples)  # was num_samples
     rec.close()
