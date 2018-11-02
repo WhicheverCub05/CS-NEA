@@ -1,8 +1,22 @@
 <component name="ProjectDictionaryState">
   <dictionary name="Alex">
     <words>
+      <w>bottomframe</w>
+      <w>frequencydata</w>
+      <w>frequencytext</w>
+      <w>graphtext</w>
+      <w>inputframe</w>
+      <w>logframe</w>
+      <w>logtext</w>
+      <w>logtextbox</w>
+      <w>midframe</w>
       <w>samplerate</w>
+      <w>setupframe</w>
+      <w>setuplabel</w>
+      <w>setuptext</w>
       <w>sinewave</w>
+      <w>steptext</w>
+      <w>topframe</w>
     </words>
   </dictionary>
 </component>
