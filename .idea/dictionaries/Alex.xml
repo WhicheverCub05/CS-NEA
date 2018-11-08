@@ -3,18 +3,22 @@
     <words>
       <w>bottomframe</w>
       <w>frequencydata</w>
+      <w>frequencyinput</w>
       <w>frequencytext</w>
       <w>graphtext</w>
       <w>inputframe</w>
       <w>logframe</w>
       <w>logtext</w>
       <w>logtextbox</w>
+      <w>mainclass</w>
       <w>midframe</w>
       <w>samplerate</w>
+      <w>savefig</w>
       <w>setupframe</w>
       <w>setuplabel</w>
       <w>setuptext</w>
       <w>sinewave</w>
+      <w>startframe</w>
       <w>steptext</w>
       <w>topframe</w>
     </words>
