@@ -125,7 +125,6 @@ class UI:
         else:
             print("Starting")
             Mainclass.start(root)
-            print("End")
 
 
 class Mainclass:
@@ -145,12 +144,12 @@ class Mainclass:
     def determine_frequency_list(self):
         if frequency_checkbox_state.get() == 0:
             frequency_list = default_frequency_list
-            print('checkbox is off')
+            print('Running with the default frequency list')
 
         else:
 
             frequency_list = Mainclass().make_user_frequency_list()
-            print("checkbox is on")
+            print("Running with the custom frequency list")
 
         return frequency_list
 
@@ -205,7 +204,11 @@ class Mainclass:
             print('Make sure your microphone is plugged into your device\n '
                   'try restarting the program with a functioning input')
 
+        except ValueError:
+            print('Make sure your frequency list only contains a\n number followed by a comma up to the last frequency')
+
         Mainclass().clear_files(file=file)
+        print("-----------End------------")
         print('')
 
         plt.show()
