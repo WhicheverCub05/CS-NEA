@@ -69,7 +69,7 @@ class UI:
         self.setuptext = Label(self.setupframe, text='                 Step 1                          '
                                                      '                      Step 2'
                                                      '                                           '
-                                                     '           Step 3                  ', bg='#CEDBFF')
+                                                     '           Step 3                  ')
         self.setuptext.pack()
 
         self.steptext1 = Label(self.setupframe, text='make sure your \n microphone \n is connected', width=20)
@@ -194,7 +194,7 @@ class Mainclass:
         frequency_list = Mainclass().determine_frequency_list()
         for i in range(len(frequency_list)):
             Mainclass().frequency_list_name(frequency_list[i])
-            Mainclass().plot_graph(recording=Mainclass().play_rec(sinewave=Mainclass().sinewave(frequency=frequency_list[i]), frequency=frequency_list[i]), i = i)
+            Mainclass().plot_graph(recording=Mainclass().play_rec(sinewave=Mainclass().sinewave(frequency=frequency_list[i]), frequency=frequency_list[i]), i=i)
         Mainclass().clear_files(file=file)
         print('')
 
