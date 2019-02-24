@@ -28,7 +28,7 @@ user_input_list = StringVar()
 class UI:
 
     def __init__(self, master):
-        root.geometry("700x300")
+        root.geometry("720x300")
         root.minsize(500, 275)
         # root.iconbitmap('icon1.ico')
         root.title('Frequency Analyser')
@@ -106,7 +106,7 @@ class UI:
         self.scrollbar = Scrollbar(self.logframe)
         self.scrollbar.pack(side=RIGHT, fill=Y)
 
-        self.logtextbox = Text(self.logframe, width=45, height=7, yscrollcommand=self.scrollbar.set)
+        self.logtextbox = Text(self.logframe, width=55, height=7, yscrollcommand=self.scrollbar.set)
         self.logtextbox.pack(side=LEFT)
         self.logtextbox.bind("<Key>", lambda e:"break")
 
@@ -192,9 +192,19 @@ class Mainclass:
 
     def start(self):
         frequency_list = Mainclass().determine_frequency_list()
-        for i in range(len(frequency_list)):
-            Mainclass().frequency_list_name(frequency_list[i])
-            Mainclass().plot_graph(recording=Mainclass().play_rec(sinewave=Mainclass().sinewave(frequency=frequency_list[i]), frequency=frequency_list[i]), i=i)
+        try:
+            for i in range(len(frequency_list)):
+                Mainclass().frequency_list_name(frequency_list[i])
+                Mainclass().plot_graph(recording=Mainclass().play_rec(sinewave=Mainclass().sinewave(frequency=frequency_list[i]), frequency=frequency_list[i]), i=i)
+
+        except FileNotFoundError:
+            print('Make sure audio files in use are not being deleted\n '
+                  'try restarting program with with a functioning input')
+
+        except sd.PortAudioError:
+            print('Make sure your microphone is plugged into your device\n '
+                  'try restarting the program with a functioning input')
+
         Mainclass().clear_files(file=file)
         print('')
 
