@@ -28,8 +28,8 @@ user_input_list = StringVar()
 class UI:
 
     def __init__(self, master):
-        root.geometry("720x300")
-        root.minsize(500, 275)
+        root.geometry("720x325")
+        root.minsize(500, 300)
         # root.iconbitmap('icon1.ico')
         root.title('Frequency Analyser')
 
@@ -87,13 +87,13 @@ class UI:
                                     text='Run custom \n frequencies?', height=3, width=14)
         self.Checkbox.pack(side=LEFT)
 
-        self.frequencyinput = Entry(self.inputframe_left, textvariable=user_input_list, width=37)
+        self.frequencyinput = Entry(self.inputframe_left, textvariable=user_input_list, width=41)
         self.frequencyinput.pack(side=BOTTOM)
 
         self.frequencyinput_text = Label(self.inputframe_left, text='Default frequency list = \n 31, 62, 125, 250, '
                                                                     '500, 1000,\n 2000, 4000, 8000, 16000\n\n'
-                                                                    'Input custom list - comma separated (,_) ',
-                                         height=5, bg='#CEDBFF')
+                                                                    'Input custom list - comma separated (,_) \n',
+                                         height=6, width=35, bg='#CEDBFF')
         self.frequencyinput_text.pack(side=TOP)
 
         self.frequencyinput.bind("<Enter>", self.input_box_on_hover)
@@ -109,7 +109,7 @@ class UI:
         self.scrollbar = Scrollbar(self.logframe)
         self.scrollbar.pack(side=RIGHT, fill=Y)
 
-        self.logtextbox = Text(self.logframe, width=55, height=7, yscrollcommand=self.scrollbar.set)
+        self.logtextbox = Text(self.logframe, width=50, height=9, yscrollcommand=self.scrollbar.set)
         self.logtextbox.pack(side=LEFT)
         self.logtextbox.bind("<Key>", lambda e:"break")
 
@@ -121,15 +121,15 @@ class UI:
         sys.stdout.write = print_to_gui
 
     def input_box_on_hover(self, event):
-        self.frequencyinput_text.configure(text='Frequency Categories\nBass (Kick)  : 60 to 250 hz\nLower Mid '
-                                                '(Kick presence) : 250 to 500 hz\nHigher Mid (Vocal range) : '
-                                                '500 to 3000 hz\nPresence to treble (Hi hat) : 3000 to 20khz')
-        print("kkkkkk")
+        self.frequencyinput_text.configure(text='Frequency Categories\nBass (Boom)       : 60 to 250 hz\nLower Mid '
+                                                
+                                                '(Kick presence)  : 250 to 500 hz\nHigher Mid (Vocal range)    : '
+                                                '500 to 3000 hz\nPresence to treble (Hi hats) : 3000 to 20khz\n'
+                                                'Example List : 80, 200, 1000, 16000')
 
     def input_box_off_hover(self, event):
         self.frequencyinput_text.configure(text='Default frequency list = \n 31, 62, 125, 250, 500, 1000,\n 2000, 4000,'
                                                 ' 8000, 16000\nInput custom list - comma separated (,_) ')
-        print("yyyyyy")
 
     def start_button(self, root):
         if re.search('[a-zA-Z]', StringVar.get(user_input_list)) and frequency_checkbox_state.get() == 1:
@@ -181,7 +181,7 @@ class Mainclass:
         sd.wait()
         return recording
 
-    def plot_graph(self, recording, i):
+    def plot_graph(self, current_frequency, recording, i):
         wav.write(file[i], sample_rate, recording)
         rec = wave.open(file[i], 'r')
         data = rec.readframes(num_samples)
@@ -190,13 +190,22 @@ class Mainclass:
         data = np.array(data)  # [] number can be inserted for a set of frames
         data_fft = np.fft.fft(data)
         frequencies = np.abs(data_fft)
+        rft = np.fft.rfft(frequencies/100000)
+        #rft[:15000] = 0 # cuts out everything after 20khz
+        smooth_frequencies = np.fft.irfft(rft)
         plt.xscale('log')
         plt.yscale('log')
         print("The highest recorded frequency is {} Hz".format(np.argmax(frequencies[0:20000])))
-        plt.plot(frequencies[0:20000])
+        min_plot_for_frequency = int((current_frequency-current_frequency/10))
+        max_plot_for_frequency = int((current_frequency+current_frequency/10))
+        print('min for frequency[i]: ', min_plot_for_frequency, '\nmax for frequency[i] :', max_plot_for_frequency)
+
+        plt.plot(smooth_frequencies[min_plot_for_frequency:max_plot_for_frequency])
+        #plt.plot(smooth_frequencies[0:20000])  # was just frequencies
+
         plt.title("Frequencies found")
         plt.xlim(27, 20000)
-        plt.ylim(100000, 1000000000)
+        plt.ylim(1, 10000)
         plt.savefig('wave{}.png'.format(i))
 
     def clear_files(self, file):
@@ -208,7 +217,7 @@ class Mainclass:
         try:
             for i in range(len(frequency_list)):
                 Mainclass().frequency_list_name(frequency_list[i])
-                Mainclass().plot_graph(recording=Mainclass().play_rec(sinewave=Mainclass().sinewave(frequency=frequency_list[i]), frequency=frequency_list[i]), i=i)
+                Mainclass().plot_graph(current_frequency=frequency_list[i], recording=Mainclass().play_rec(sinewave=Mainclass().sinewave(frequency=frequency_list[i]), frequency=frequency_list[i]), i=i)
 
         except FileNotFoundError:
             print('Make sure audio files in use are not being deleted\n '
