@@ -89,14 +89,15 @@ class UI:
 
         self.frequencyinput = Entry(self.inputframe_left, textvariable=user_input_list, width=37)
         self.frequencyinput.pack(side=BOTTOM)
-        self.frequencyinput.bind("<Enter>", self.on_enter)
-        self.frequencyinput.bind("<Leave>", self.on_leave)
 
         self.frequencyinput_text = Label(self.inputframe_left, text='Default frequency list = \n 31, 62, 125, 250, '
                                                                     '500, 1000,\n 2000, 4000, 8000, 16000\n\n'
                                                                     'Input custom list - comma separated (,_) ',
                                          height=5, bg='#CEDBFF')
         self.frequencyinput_text.pack(side=TOP)
+
+        self.frequencyinput.bind("<Enter>", self.input_box_on_hover)
+        self.frequencyinput.bind("<Leave>", self.input_box_off_hover)
 
         self.startButton = Button(self.startframe, text='Start', font='Helvetica 9 bold', width=10, height=2, bg='#83A4FF')
         self.startButton.bind('<Button-1>', self.start_button)
@@ -119,14 +120,16 @@ class UI:
 
         sys.stdout.write = print_to_gui
 
-    def input_box_on_hover(self):
+    def input_box_on_hover(self, event):
         self.frequencyinput_text.configure(text='Frequency Categories\nBass (Kick)  : 60 to 250 hz\nLower Mid '
                                                 '(Kick presence) : 250 to 500 hz\nHigher Mid (Vocal range) : '
                                                 '500 to 3000 hz\nPresence to treble (Hi hat) : 3000 to 20khz')
+        print("kkkkkk")
 
-    def input_box_off_hover(self):
+    def input_box_off_hover(self, event):
         self.frequencyinput_text.configure(text='Default frequency list = \n 31, 62, 125, 250, 500, 1000,\n 2000, 4000,'
                                                 ' 8000, 16000\nInput custom list - comma separated (,_) ')
+        print("yyyyyy")
 
     def start_button(self, root):
         if re.search('[a-zA-Z]', StringVar.get(user_input_list)) and frequency_checkbox_state.get() == 1:
