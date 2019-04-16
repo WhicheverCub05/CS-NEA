@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile as wav
 from tkinter import *
 import re
+import threading
 
 
 default_frequency_list = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
@@ -167,45 +168,54 @@ class Mainclass:
 
         return frequency_list
 
-    def sinewave(self, frequency):
-        sine = [np.sin(2 * np.pi * frequency * x / sample_rate) for x in range(sample_rate)]
-        return sine
+    def produce_sinewave(self, frequency):
+        produced_sinewave = [np.sin(2 * np.pi * frequency * x / sample_rate) for x in range(sample_rate)]
+        return produced_sinewave
 
-    def frequency_list_name(self, frequency):
+    def append_frequency_list_name(self, frequency):
         file.append("".join(['sinewave_at_', str(frequency), 'hz.wav']))
         return file
 
-    def play_rec(self, sinewave, frequency):
+    def play_audio_and_record_microphone(self, input_audio, frequency):
         print("playing frequency at ", frequency, "hz")
-        recording = sd.playrec(sinewave, sample_rate, channels=1, dtype='int32')
+        recorded_audio = sd.playrec(input_audio, sample_rate, channels=1, dtype='int32')
         sd.wait()
-        return recording
+        return recorded_audio
 
-    def plot_graph(self, current_frequency, recording, i):
-        wav.write(file[i], sample_rate, recording)
-        rec = wave.open(file[i], 'r')
-        data = rec.readframes(num_samples)
-        rec.close()
-        data = struct.unpack('{n}h'.format(n=num), data)
-        data = np.array(data)  # [] number can be inserted for a set of frames
-        data_fft = np.fft.fft(data)
-        frequencies = np.abs(data_fft)
-        rft = np.fft.rfft(frequencies/100000)
+    def write_audio_data(self, recorded_audio, i):
+        wav.write(file[i], sample_rate, recorded_audio)
+
+    def read_audio_data(self):
+        opened_recording = wave.open(file[i], 'r')
+        audio_data_frames = opened_recording.readframes(num_samples)
+        opened_recording.close()
+        return audio_data_frames
+
+    def process_input_audio(self, audio_data):
+        audio_data = struct.unpack('{n}h'.format(n=num), audio_data)
+        audio_data = np.array(audio_data)  # [] number can be inserted for a set of frames
+        audio_data_fft = np.fft.fft(audio_data)
+        audio_data_frequencies = np.abs(audio_data_fft)
+        audio_data_rft = np.fft.rfft(audio_data_frequencies/100000)
         #rft[:15000] = 0 # cuts out everything after 20khz
-        smooth_frequencies = np.fft.irfft(rft)
+        smoothed_audio_data_frequencies = np.fft.irfft(audio_data_rft)
+        return smoothed_audio_data_frequencies
+
+    def plot_fft_graph(self, input_frequency, audio_data):
         plt.xscale('log')
         plt.yscale('log')
-        print("The highest recorded frequency is {} Hz".format(np.argmax(frequencies[0:20000])))
-        min_plot_for_frequency = int((current_frequency-current_frequency/10))
-        max_plot_for_frequency = int((current_frequency+current_frequency/10))
-        print('min for frequency[i]: ', min_plot_for_frequency, '\nmax for frequency[i] :', max_plot_for_frequency)
-
-        plt.plot(smooth_frequencies[min_plot_for_frequency:max_plot_for_frequency])
-        #plt.plot(smooth_frequencies[0:20000])  # was just frequencies
-
+        print("The highest recorded frequency is {} Hz".format(np.argmax(audio_data[0:20000])))
+        min_plot_for_frequency = int((input_frequency - input_frequency / 10))
+        max_plot_for_frequency = int((input_frequency + input_frequency / 10))
+        print("min for frequency{} : ".format(input_frequency), min_plot_for_frequency)
+        print("max for frequency{} : ".format(input_frequency), max_plot_for_frequency)
+        #plt.plot(audio_data[min_plot_for_frequency:max_plot_for_frequency], label=("{} Hz".format(input_frequency)))
+        plt.plot(audio_data, label=("{} Hz".format(input_frequency)))
+        plt.legend(bbox_to_anchor=(0.75, 0.95), loc=2, borderaxespad=0.)
+        # plt.plot(smooth_frequencies[0:20000])  # was just frequencies
         plt.title("Frequencies found")
         plt.xlim(27, 20000)
-        plt.ylim(1, 10000)
+        plt.ylim(0.1, 10000)
         plt.savefig('wave{}.png'.format(i))
 
     def clear_files(self, file):
@@ -216,8 +226,12 @@ class Mainclass:
         frequency_list = Mainclass().determine_frequency_list()
         try:
             for i in range(len(frequency_list)):
-                Mainclass().frequency_list_name(frequency_list[i])
-                Mainclass().plot_graph(current_frequency=frequency_list[i], recording=Mainclass().play_rec(sinewave=Mainclass().sinewave(frequency=frequency_list[i]), frequency=frequency_list[i]), i=i)
+                Mainclass().append_frequency_list_name(frequency_list[i])
+                produced_sinewave = Mainclass.produce_sinewave(self, frequency=frequency_list[i])
+                recorded_audio = Mainclass.play_audio_and_record_microphone(self, input_audio=produced_sinewave, frequency=frequency_list[i])
+                audio_data_frames = Mainclass.process_input_audio(self, audio_data=recorded_audio)
+                Mainclass.plot_fft_graph(self, input_frequency=frequency_list[i], audio_data=audio_data_frames)
+                # Mainclass().plot_graph(current_frequency=frequency_list[i], recording=Mainclass().play_rec(sinewave=Mainclass().sinewave(frequency=frequency_list[i]), frequency=frequency_list[i]), i=i)
 
         except FileNotFoundError:
             print('Make sure audio files in use are not being deleted\n '
@@ -230,7 +244,10 @@ class Mainclass:
         except ValueError:
             print('Make sure your frequency list only contains a\n number followed by a comma up to the last frequency')
 
-        Mainclass().clear_files(file=file)
+        try:
+            Mainclass().clear_files(file=file)
+        except:
+            pass
         print("-----------End------------")
         print('')
 
