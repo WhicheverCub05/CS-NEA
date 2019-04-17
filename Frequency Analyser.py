@@ -209,14 +209,15 @@ class Mainclass:
         max_plot_for_frequency = int((input_frequency + input_frequency / 10))
         print("min for frequency{} : ".format(input_frequency), min_plot_for_frequency)
         print("max for frequency{} : ".format(input_frequency), max_plot_for_frequency)
-        #plt.plot(audio_data[min_plot_for_frequency:max_plot_for_frequency], label=("{} Hz".format(input_frequency)))
-        plt.plot(audio_data, label=("{} Hz".format(input_frequency)))
-        plt.legend(bbox_to_anchor=(0.75, 0.95), loc=2, borderaxespad=0.)
+        plt.plot(audio_data[min_plot_for_frequency:max_plot_for_frequency], label=("{} Hz".format(input_frequency)))
+        #plt.plot(audio_data, label=("{} Hz".format(input_frequency)))
+        plt.legend(bbox_to_anchor=(0, 1), loc=2, borderaxespad=0., fontsize='small', ncol=5)
         # plt.plot(smooth_frequencies[0:20000])  # was just frequencies
         plt.title("Frequencies found")
-        plt.xlim(27, 20000)
+        plt.xlim(2, 2000)
         plt.ylim(0.1, 10000)
-        plt.savefig('wave{}.png'.format(i))
+        plt.xlabel('Frequencies/Hz')
+        plt.ylabel('Amplitude')
 
     def clear_files(self, file):
         for i in range(len(file)):
@@ -231,7 +232,6 @@ class Mainclass:
                 recorded_audio = Mainclass.play_audio_and_record_microphone(self, input_audio=produced_sinewave, frequency=frequency_list[i])
                 audio_data_frames = Mainclass.process_input_audio(self, audio_data=recorded_audio)
                 Mainclass.plot_fft_graph(self, input_frequency=frequency_list[i], audio_data=audio_data_frames)
-                # Mainclass().plot_graph(current_frequency=frequency_list[i], recording=Mainclass().play_rec(sinewave=Mainclass().sinewave(frequency=frequency_list[i]), frequency=frequency_list[i]), i=i)
 
         except FileNotFoundError:
             print('Make sure audio files in use are not being deleted\n '
