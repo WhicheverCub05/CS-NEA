@@ -10,6 +10,7 @@ from tkinter import *
 import re
 import threading
 
+
 default_frequency_list = [500, 1000]  # for testing
 #default_frequency_list = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 
@@ -209,7 +210,7 @@ class Mainclass:
         audio_data_fft = np.fft.fft(audio_data)
         audio_data_frequencies = np.abs(audio_data_fft)
         audio_data_rft = np.fft.rfft(audio_data_frequencies/100000)
-        #rft[:15000] = 0 # cuts out everything after 20khz
+        # rft[:15000] = 0 # cuts out everything after 20khz
         smoothed_audio_data_frequencies = np.fft.irfft(audio_data_rft)
         return smoothed_audio_data_frequencies
 
@@ -232,9 +233,9 @@ class Mainclass:
         plt.xlabel('Frequencies/Hz')
         plt.ylabel('Amplitude')
 
-    def clear_files(self, file):
-        for i in range(len(file)):
-            os.remove(file[i])
+    def clear_files(self, file_list):
+        for i in range(len(file_list)):
+            os.remove(file_list[i])  # was just file
 
     def start(self):
         frequency_list = Mainclass().determine_frequency_list()
@@ -243,16 +244,12 @@ class Mainclass:
 
                 Mainclass().append_frequency_list_name(frequency_list[i])
                 produced_sinewave = Mainclass.produce_sinewave(self, frequency=frequency_list[i])
-                recorded_audio = Mainclass.play_audio_and_record_microphone(self, input_audio=produced_sinewave, frequency=frequency_list[i])
+                root.update_idletasks()
+                recorded_audio = Mainclass.play_audio_and_record_microphone(self, input_audio=produced_sinewave,
+                                                                            frequency=frequency_list[i])
                 audio_data_frames = Mainclass.process_input_audio(self, audio_data=recorded_audio)
 
-                # Mainclass.plot_fft_graph(self, input_frequency=frequency_list[i], audio_data=audio_data_frames)
-
-                plot_fft_graph_thread = threading.Thread(
-                    target=Mainclass.plot_fft_graph(self, input_frequency=frequency_list[i],
-                                                    audio_data=audio_data_frames))
-
-                plot_fft_graph_thread.start()
+                Mainclass.plot_fft_graph(self, input_frequency=frequency_list[i], audio_data=audio_data_frames)
 
         except FileNotFoundError:
             print('Make sure audio files in use are not being deleted\n '
@@ -266,7 +263,7 @@ class Mainclass:
             print('Make sure your frequency list only contains a\n number followed by a comma up to the last frequency')
 
         try:
-            Mainclass().clear_files(file=file)
+            Mainclass().clear_files(file_list=file)
         except:
             pass
         print("-----------End------------")
@@ -274,7 +271,7 @@ class Mainclass:
 
         plt.show()
 
-# UI_thread = threading.Thread(target=UI)
+
 if __name__ == "__main__":
     a = UI(root)  # UI(root)
     root.mainloop()
