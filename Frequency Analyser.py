@@ -8,11 +8,10 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile as wav
 from tkinter import *
 import re
-import threading
 
 
-default_frequency_list = [500, 1000]  # for testing
-#default_frequency_list = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
+# default_frequency_list = [500, 1000]
+default_frequency_list = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 
 file = []
 i = 0
@@ -116,11 +115,13 @@ class UI:
         self.logtextbox.pack(side=LEFT)
         self.logtextbox.bind("<Key>", lambda e: "break")
         self.logtextbox.config(yscrollcommand=self.scrollbar.set)
+        self.logtextbox.see('end')
 
         self.scrollbar.config(command=self.logtextbox.yview)
 
         def print_to_gui(printed_statements):
             self.logtextbox.insert(INSERT, printed_statements)
+            self.logtextbox.see('end')
 
         sys.stdout.write = print_to_gui
 
@@ -142,9 +143,7 @@ class UI:
             print('---------------------------')
         else:
             print("Starting")
-            # start_thread = threading.Thread(target=Mainclass.start(root))
-            # start_thread.start()
-            Mainclass.start(root)
+            Mainclass.start_analysing(root)
 
 
 class Mainclass:
@@ -209,7 +208,7 @@ class Mainclass:
         audio_data = np.array(audio_data)  # [] number can be inserted for a set of frames
         audio_data_fft = np.fft.fft(audio_data)
         audio_data_frequencies = np.abs(audio_data_fft)
-        audio_data_rft = np.fft.rfft(audio_data_frequencies/100000)
+        audio_data_rft = np.fft.rfft(audio_data_frequencies/1000000)
         # rft[:15000] = 0 # cuts out everything after 20khz
         smoothed_audio_data_frequencies = np.fft.irfft(audio_data_rft)
         return smoothed_audio_data_frequencies
@@ -217,27 +216,30 @@ class Mainclass:
     def plot_fft_graph(self, input_frequency, audio_data):
         plt.xscale('log')
         plt.yscale('log')
-        print("The highest recorded frequency is {} Hz\n".format(np.argmax(audio_data[0:20000])))
+        print("The highest recorded frequency is {} Hz\n".format(np.argmax(audio_data[0:30000])))
         min_plot_for_frequency = int((input_frequency - input_frequency / 10))
         max_plot_for_frequency = int((input_frequency + input_frequency / 10))
-        # print("min for frequency{} : ".format(input_frequency), min_plot_for_frequency)
-        # print("max for frequency{} : ".format(input_frequency), max_plot_for_frequency)
+
         plt.plot(audio_data[min_plot_for_frequency:max_plot_for_frequency], label=("{} Hz".format(input_frequency)))
-        # plt.plot(audio_data[min_plot_for_frequency:max_plot_for_frequency], label=("{} Hz".format(input_frequency)))
-        # plt.plot(audio_data, label=("{} Hz".format(input_frequency)))
+
         plt.legend(bbox_to_anchor=(0, 1), loc=2, borderaxespad=0., fontsize='small', ncol=5)
-        # plt.plot(smooth_frequencies[0:20000])  # was just frequencies
         plt.title("Frequencies found")
-        plt.xlim(2, 2000)
-        plt.ylim(0.1, 10000)
         plt.xlabel('Frequencies/Hz')
         plt.ylabel('Amplitude')
+
+    def display_graph(self, frequency_list):
+        min_graph_range = (((min(frequency_list) / 10) * 8) / 10)
+        max_graph_range = (((max(frequency_list) / 8) * 10) / 10)
+
+        plt.xlim(min_graph_range, max_graph_range)
+        plt.ylim(0.1, 10000)
+        plt.show()
 
     def clear_files(self, file_list):
         for i in range(len(file_list)):
             os.remove(file_list[i])  # was just file
 
-    def start(self):
+    def start_analysing(self):
         frequency_list = Mainclass().determine_frequency_list()
         try:
             for i in range(len(frequency_list)):
@@ -245,6 +247,7 @@ class Mainclass:
                 Mainclass().append_frequency_list_name(frequency_list[i])
                 produced_sinewave = Mainclass.produce_sinewave(self, frequency=frequency_list[i])
                 root.update_idletasks()
+
                 recorded_audio = Mainclass.play_audio_and_record_microphone(self, input_audio=produced_sinewave,
                                                                             frequency=frequency_list[i])
                 audio_data_frames = Mainclass.process_input_audio(self, audio_data=recorded_audio)
@@ -266,10 +269,9 @@ class Mainclass:
             Mainclass().clear_files(file_list=file)
         except:
             pass
-        print("-----------End------------")
-        print('')
+        print("-----------End------------\n")
 
-        plt.show()
+        Mainclass.display_graph(self, frequency_list=frequency_list)
 
 
 if __name__ == "__main__":
