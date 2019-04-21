@@ -10,9 +10,9 @@ from tkinter import *
 import re
 import threading
 
+default_frequency_list = [500, 1000]  # for testing
+#default_frequency_list = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 
-default_frequency_list = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
-# default_frequency_list = [1000, 200, 400]  for testing
 file = []
 i = 0
 sample_rate = 48000
@@ -30,7 +30,8 @@ class UI:
 
     def __init__(self, master):
         root.geometry("720x325")
-        root.minsize(500, 300)
+        root.minsize(550, 300)
+        root.maxsize(800, 400)
         # root.iconbitmap('icon1.ico')
         root.title('Frequency Analyser')
 
@@ -65,12 +66,12 @@ class UI:
         self.logframe.pack(side=RIGHT)
 
         self.setuplabel = Label(self.setupframe, text='Setup before running the program', height=2)
-        self.setuplabel.pack(side=TOP)
+        self.setuplabel.pack()
 
-        self.setuptext = Label(self.setupframe, text='                 Step 1                          '
-                                                     '                      Step 2'
+        self.setuptext = Label(self.setupframe, text='            Step 1                '
+                                                     '                             Step 2'
                                                      '                                           '
-                                                     '           Step 3                  ')
+                                                     '  Step 3             ', font='helvetica 11 bold')
         self.setuptext.pack()
 
         self.steptext1 = Label(self.setupframe, text='make sure your \n microphone \n is connected', width=20)
@@ -112,7 +113,8 @@ class UI:
 
         self.logtextbox = Text(self.logframe, width=50, height=9, yscrollcommand=self.scrollbar.set)
         self.logtextbox.pack(side=LEFT)
-        self.logtextbox.bind("<Key>", lambda e:"break")
+        self.logtextbox.bind("<Key>", lambda e: "break")
+        self.logtextbox.config(yscrollcommand=self.scrollbar.set)
 
         self.scrollbar.config(command=self.logtextbox.yview)
 
@@ -139,6 +141,8 @@ class UI:
             print('---------------------------')
         else:
             print("Starting")
+            # start_thread = threading.Thread(target=Mainclass.start(root))
+            # start_thread.start()
             Mainclass.start(root)
 
 
@@ -150,21 +154,29 @@ class Mainclass:
     def make_user_frequency_list(self):
         user_frequency_list = StringVar.get(user_input_list)
         user_frequency_list = user_frequency_list.split(',')
+        correct_user_list = True
 
         for i in range(len(user_frequency_list)):
-            user_frequency_list[i] = int(user_frequency_list[i])
+            try:
+                user_frequency_list[i] = int(user_frequency_list[i])
+            except ValueError:
+                print("Make sure you input a list of frequencies if the checkbox is ticked")
+                correct_user_list = False
 
-        return user_frequency_list
+        if correct_user_list:  # == True
+            return user_frequency_list
+        else:
+            user_frequency_list = [0]
+            return user_frequency_list
 
     def determine_frequency_list(self):
         if frequency_checkbox_state.get() == 0:
             frequency_list = default_frequency_list
-            print('Running with the default frequency list')
+            print('Running with the default frequency list\n')
 
         else:
-
             frequency_list = Mainclass().make_user_frequency_list()
-            print("Running with the custom frequency list")
+            print('Running with the custom frequency list\n')
 
         return frequency_list
 
@@ -204,13 +216,14 @@ class Mainclass:
     def plot_fft_graph(self, input_frequency, audio_data):
         plt.xscale('log')
         plt.yscale('log')
-        print("The highest recorded frequency is {} Hz".format(np.argmax(audio_data[0:20000])))
+        print("The highest recorded frequency is {} Hz\n".format(np.argmax(audio_data[0:20000])))
         min_plot_for_frequency = int((input_frequency - input_frequency / 10))
         max_plot_for_frequency = int((input_frequency + input_frequency / 10))
-        print("min for frequency{} : ".format(input_frequency), min_plot_for_frequency)
-        print("max for frequency{} : ".format(input_frequency), max_plot_for_frequency)
+        # print("min for frequency{} : ".format(input_frequency), min_plot_for_frequency)
+        # print("max for frequency{} : ".format(input_frequency), max_plot_for_frequency)
         plt.plot(audio_data[min_plot_for_frequency:max_plot_for_frequency], label=("{} Hz".format(input_frequency)))
-        #plt.plot(audio_data, label=("{} Hz".format(input_frequency)))
+        # plt.plot(audio_data[min_plot_for_frequency:max_plot_for_frequency], label=("{} Hz".format(input_frequency)))
+        # plt.plot(audio_data, label=("{} Hz".format(input_frequency)))
         plt.legend(bbox_to_anchor=(0, 1), loc=2, borderaxespad=0., fontsize='small', ncol=5)
         # plt.plot(smooth_frequencies[0:20000])  # was just frequencies
         plt.title("Frequencies found")
@@ -227,11 +240,19 @@ class Mainclass:
         frequency_list = Mainclass().determine_frequency_list()
         try:
             for i in range(len(frequency_list)):
+
                 Mainclass().append_frequency_list_name(frequency_list[i])
                 produced_sinewave = Mainclass.produce_sinewave(self, frequency=frequency_list[i])
                 recorded_audio = Mainclass.play_audio_and_record_microphone(self, input_audio=produced_sinewave, frequency=frequency_list[i])
                 audio_data_frames = Mainclass.process_input_audio(self, audio_data=recorded_audio)
-                Mainclass.plot_fft_graph(self, input_frequency=frequency_list[i], audio_data=audio_data_frames)
+
+                # Mainclass.plot_fft_graph(self, input_frequency=frequency_list[i], audio_data=audio_data_frames)
+
+                plot_fft_graph_thread = threading.Thread(
+                    target=Mainclass.plot_fft_graph(self, input_frequency=frequency_list[i],
+                                                    audio_data=audio_data_frames))
+
+                plot_fft_graph_thread.start()
 
         except FileNotFoundError:
             print('Make sure audio files in use are not being deleted\n '
@@ -253,7 +274,7 @@ class Mainclass:
 
         plt.show()
 
-
+# UI_thread = threading.Thread(target=UI)
 if __name__ == "__main__":
-    a = UI(root)
+    a = UI(root)  # UI(root)
     root.mainloop()
