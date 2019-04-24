@@ -9,14 +9,11 @@ import re
 
 default_frequency_list = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 
-file = []
-i = 0
 sample_rate = 48000
-sd.default.samplerate = sample_rate
 sd.default.channels = 1
+sd.default.samplerate = sample_rate
 num_samples = sample_rate
 sampling_rate = sample_rate
-num = num_samples * 2
 root = Tk()
 frequency_checkbox_state = IntVar()
 user_input_list = StringVar()
@@ -139,10 +136,11 @@ class UI:
             print("Only use numbers, spaces and commas in your list")
             print('---------------------------')
 
-        elif not StringVar.get(user_input_list).strip():
+        elif not StringVar.get(user_input_list).strip()and frequency_checkbox_state.get() == 1:
             print('---------------------------')
             print("Make sure to input a list if the checkbox is ticked")
             print('---------------------------')
+
         else:
             list_is_valid = True
 
@@ -152,6 +150,7 @@ class UI:
             if self.check_validity_of_user_frequency_list():
                 print("Starting")
                 Mainclass().start_analysing()
+
             else:
                 pass
 
@@ -193,23 +192,25 @@ class Mainclass:
 
     def produce_sinewave(self, frequency):
         produced_sinewave = [np.sin(2 * np.pi * frequency * x / sample_rate) for x in range(sample_rate)]
+
         return produced_sinewave
 
     def play_audio_and_record_microphone(self, input_audio, frequency):
         print("playing frequency at ", frequency, "hz")
         recorded_audio = sd.playrec(input_audio, sample_rate, channels=1, dtype='int32')
         sd.wait()
+
         return recorded_audio
 
     def process_input_audio(self, audio_data):
-        audio_data = struct.unpack('{n}h'.format(n=num), audio_data)
+        audio_data = struct.unpack('{n}h'.format(n=num_samples*2), audio_data)
         audio_data = np.array(audio_data)  # [] number can be inserted for a set of frames
         audio_data_fft = np.fft.fft(audio_data)
-        audio_data_frequencies = np.abs(audio_data_fft)
-        audio_data_rft = np.fft.rfft(audio_data_frequencies/1000000)
-        # rft[:15000] = 0 # cuts out everything after 20khz
-        smoothed_audio_data_frequencies = np.fft.irfft(audio_data_rft)
-        return smoothed_audio_data_frequencies
+        audio_data_absolute = np.abs(audio_data_fft)
+        audio_data_rfft = np.fft.rfft(audio_data_absolute)/1000000
+        smoothed_audio_data = np.fft.irfft(audio_data_rfft)
+
+        return smoothed_audio_data
 
     def plot_fft_graph(self, input_frequency, audio_data):
         plt.xscale('log')
@@ -217,7 +218,6 @@ class Mainclass:
         print("The highest recorded frequency is {} Hz\n".format(np.argmax(audio_data[0:30000])))
         min_plot_for_frequency = int((input_frequency - input_frequency / 10))
         max_plot_for_frequency = int((input_frequency + input_frequency / 10))
-
         plt.plot(audio_data[min_plot_for_frequency:max_plot_for_frequency], label=("{} Hz".format(input_frequency)))
 
         plt.legend(bbox_to_anchor=(0, 1), loc=2, borderaxespad=0., fontsize='small', ncol=5)
@@ -230,7 +230,7 @@ class Mainclass:
         max_graph_range = (((max(frequency_list) / 8) * 10) / 10)
 
         plt.xlim(min_graph_range, max_graph_range)
-        plt.ylim(0.1, 10000)
+        plt.ylim(0.1, 100000)
         plt.show()
 
     def start_analysing(self):
