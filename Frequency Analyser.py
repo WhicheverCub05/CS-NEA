@@ -1,16 +1,12 @@
 import sounddevice as sd
 from pylab import *
 import struct
-import wave
-import os
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.io import wavfile as wav
 from tkinter import *
 import re
 
 
-# default_frequency_list = [500, 1000]
 default_frequency_list = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 
 file = []
@@ -32,102 +28,102 @@ class UI:
         root.geometry("720x325")
         root.minsize(550, 300)
         root.maxsize(800, 400)
-        # root.iconbitmap('icon1.ico')
+        # root.iconbitmap('icon1.ico'), to used when icon and program are locally stored
         root.title('Frequency Analyser')
 
-        self.mainframe = Frame(root)
-        self.mainframe.pack()
+        self.main_frame = Frame(root)
+        self.main_frame.pack()
 
-        self.graphframe = Frame(root)
-        self.graphframe.pack(side=BOTTOM)
+        self.graph_frame = Frame(root)
+        self.graph_frame.pack(side=BOTTOM)
 
-        self.topframe = Frame(self.mainframe)
-        self.topframe.pack(side=TOP)
+        self.top_frame = Frame(self.main_frame)
+        self.top_frame.pack(side=TOP)
 
-        self.setupframe = Frame(self.topframe, border=5)
-        self.setupframe.pack(side=TOP)
+        self.setup_frame = Frame(self.top_frame, border=5)
+        self.setup_frame.pack(side=TOP)
 
-        self.midframe = Frame(self.mainframe, border=5)
-        self.midframe.pack(side=TOP)
+        self.mid_frame = Frame(self.main_frame, border=5)
+        self.mid_frame.pack(side=TOP)
 
-        self.startframe = Frame(self.midframe, border=5)
-        self.startframe.pack(side=LEFT)
+        self.start_frame = Frame(self.mid_frame, border=5)
+        self.start_frame.pack(side=LEFT)
 
-        self.inputframe = Frame(self.startframe)
-        self.inputframe.pack(side=BOTTOM)
+        self.input_frame = Frame(self.start_frame)
+        self.input_frame.pack(side=BOTTOM)
 
-        self.inputframe_left = Frame(self.inputframe)
-        self.inputframe_left.pack(side=LEFT)
+        self.input_frame_left = Frame(self.input_frame)
+        self.input_frame_left.pack(side=LEFT)
 
-        self.bottomframe = Frame(self.mainframe)
-        self.bottomframe.pack(side=BOTTOM, )
+        self.bottom_frame = Frame(self.main_frame)
+        self.bottom_frame.pack(side=BOTTOM, )
 
-        self.logframe = Frame(self.midframe, border=5)
-        self.logframe.pack(side=RIGHT)
+        self.log_frame = Frame(self.mid_frame, border=5)
+        self.log_frame.pack(side=RIGHT)
 
-        self.setuplabel = Label(self.setupframe, text='Setup before running the program', height=2)
-        self.setuplabel.pack()
+        self.setup_label = Label(self.setup_frame, text='Setup before running the program', height=2)
+        self.setup_label.pack()
 
-        self.setuptext = Label(self.setupframe, text='            Step 1                '
-                                                     '                             Step 2'
-                                                     '                                           '
-                                                     '  Step 3             ', font='helvetica 11 bold')
-        self.setuptext.pack()
+        self.setup_text = Label(self.setup_frame, text='            Step 1                '
+                                                       '                             Step 2'
+                                                       '                                           '
+                                                       '  Step 3             ', font='helvetica 11 bold')
+        self.setup_text.pack()
 
-        self.steptext1 = Label(self.setupframe, text='make sure your \n microphone \n is connected', width=20)
-        self.steptext1.pack(side=LEFT)
+        self.step_text1 = Label(self.setup_frame, text='make sure your \n microphone \n is connected', width=20)
+        self.step_text1.pack(side=LEFT)
 
-        self.steptext3 = Label(self.setupframe, text='make sure to have \n your microphone \n in its used position',
-                               width=20)
-        self.steptext3.pack(side=RIGHT)
+        self.step_text3 = Label(self.setup_frame, text='make sure to have \n your microphone \n in its used position',
+                                width=20)
+        self.step_text3.pack(side=RIGHT)
 
-        self.steptext2 = Label(self.setupframe, text='make sure the volume\n on the microphone and speaker are\n'
-                                                     'at the level of intended use', width=30)
-        self.steptext2.pack()
+        self.step_text2 = Label(self.setup_frame, text='make sure the volume\n on the microphone and speaker are\n'
+                                                       'at the level of intended use', width=30)
+        self.step_text2.pack()
 
-        self.Checkbox = Checkbutton(self.startframe, state=ACTIVE, variable=frequency_checkbox_state,
+        self.Checkbox = Checkbutton(self.start_frame, state=ACTIVE, variable=frequency_checkbox_state,
                                     text='Run custom \n frequencies?', height=3, width=14)
         self.Checkbox.pack(side=LEFT)
 
-        self.frequencyinput = Entry(self.inputframe_left, textvariable=user_input_list, width=41)
-        self.frequencyinput.pack(side=BOTTOM)
+        self.user_frequency_input = Entry(self.input_frame_left, textvariable=user_input_list, width=41)
+        self.user_frequency_input.pack(side=BOTTOM)
 
-        self.frequencyinput_text = Label(self.inputframe_left, text='Default frequency list = \n 31, 62, 125, 250, '
-                                                                    '500, 1000,\n 2000, 4000, 8000, 16000\n\n'
-                                                                    'Input custom list - comma separated (,_) \n',
+        self.frequencyinput_text = Label(self.input_frame_left, text='Default frequency list = \n 31, 62, 125, 250, '
+                                                                     '500, 1000,\n 2000, 4000, 8000, 16000\n\n'
+                                                                     'Input custom list - comma separated (,_) \n',
                                          height=6, width=35, bg='#CEDBFF')
         self.frequencyinput_text.pack(side=TOP)
 
-        self.frequencyinput.bind("<Enter>", self.input_box_on_hover)
-        self.frequencyinput.bind("<Leave>", self.input_box_off_hover)
+        self.user_frequency_input.bind("<Enter>", self.input_box_on_hover)
+        self.user_frequency_input.bind("<Leave>", self.input_box_off_hover)
 
-        self.startButton = Button(self.startframe, text='Start', font='Helvetica 9 bold', width=10, height=2, bg='#83A4FF')
-        self.startButton.bind('<Button-1>', self.start_button)
-        self.startButton.pack(side=LEFT)
+        self.start_Button = Button(self.start_frame, text='Start', font='Helvetica 9 bold', width=10, height=2,
+                                   bg='#83A4FF')
+        self.start_Button.bind('<Button-1>', self.start_button)
+        self.start_Button.pack(side=LEFT)
 
-        self.logtext_title = Label(self.logframe, text='Log: ')
+        self.logtext_title = Label(self.log_frame, text='Log: ')
         self.logtext_title.pack(side=TOP)
 
-        self.scrollbar = Scrollbar(self.logframe)
+        self.scrollbar = Scrollbar(self.log_frame)
         self.scrollbar.pack(side=RIGHT, fill=Y)
 
-        self.logtextbox = Text(self.logframe, width=50, height=9, yscrollcommand=self.scrollbar.set)
-        self.logtextbox.pack(side=LEFT)
-        self.logtextbox.bind("<Key>", lambda e: "break")
-        self.logtextbox.config(yscrollcommand=self.scrollbar.set)
-        self.logtextbox.see('end')
+        self.logtext_box = Text(self.log_frame, width=52, height=9, yscrollcommand=self.scrollbar.set)
+        self.logtext_box.pack(side=LEFT)
+        self.logtext_box.bind("<Key>", lambda e: "break")
+        self.logtext_box.config(yscrollcommand=self.scrollbar.set)
+        self.logtext_box.see('end')
 
-        self.scrollbar.config(command=self.logtextbox.yview)
+        self.scrollbar.config(command=self.logtext_box.yview)
 
         def print_to_gui(printed_statements):
-            self.logtextbox.insert(INSERT, printed_statements)
-            self.logtextbox.see('end')
+            self.logtext_box.insert(INSERT, printed_statements)
+            self.logtext_box.see('end')
 
         sys.stdout.write = print_to_gui
 
     def input_box_on_hover(self, event):
         self.frequencyinput_text.configure(text='Frequency Categories\nBass (Boom)       : 60 to 250 hz\nLower Mid '
-                                                
                                                 '(Kick presence)  : 250 to 500 hz\nHigher Mid (Vocal range)    : '
                                                 '500 to 3000 hz\nPresence to treble (Hi hats) : 3000 to 20khz\n'
                                                 'Example List : 80, 200, 1000, 16000')
@@ -136,14 +132,28 @@ class UI:
         self.frequencyinput_text.configure(text='Default frequency list = \n 31, 62, 125, 250, 500, 1000,\n 2000, 4000,'
                                                 ' 8000, 16000\nInput custom list - comma separated (,_) ')
 
-    def start_button(self, root):
+    def check_validity_of_user_frequency_list(self):
+        list_is_valid = False
         if re.search('[a-zA-Z]', StringVar.get(user_input_list)) and frequency_checkbox_state.get() == 1:
             print('---------------------------')
-            print("Only use numbers, spaces and commas in list")
+            print("Only use numbers, spaces and commas in your list")
+            print('---------------------------')
+
+        elif not StringVar.get(user_input_list).strip():
+            print('---------------------------')
+            print("Make sure to input a list if the checkbox is ticked")
             print('---------------------------')
         else:
-            print("Starting")
-            Mainclass.start_analysing(root)
+            list_is_valid = True
+
+        return list_is_valid
+
+    def start_button(self, root):
+            if self.check_validity_of_user_frequency_list():
+                print("Starting")
+                Mainclass().start_analysing()
+            else:
+                pass
 
 
 class Mainclass:
@@ -160,13 +170,14 @@ class Mainclass:
             try:
                 user_frequency_list[i] = int(user_frequency_list[i])
             except ValueError:
-                print("Make sure you input a list of frequencies if the checkbox is ticked")
+                print('---------------------------')
+                print("Only use numbers, spaces and commas in your list")
+                print('---------------------------')
                 correct_user_list = False
-
         if correct_user_list:  # == True
             return user_frequency_list
         else:
-            user_frequency_list = [0]
+            user_frequency_list = [1]
             return user_frequency_list
 
     def determine_frequency_list(self):
@@ -184,24 +195,11 @@ class Mainclass:
         produced_sinewave = [np.sin(2 * np.pi * frequency * x / sample_rate) for x in range(sample_rate)]
         return produced_sinewave
 
-    def append_frequency_list_name(self, frequency):
-        file.append("".join(['sinewave_at_', str(frequency), 'hz.wav']))
-        return file
-
     def play_audio_and_record_microphone(self, input_audio, frequency):
         print("playing frequency at ", frequency, "hz")
         recorded_audio = sd.playrec(input_audio, sample_rate, channels=1, dtype='int32')
         sd.wait()
         return recorded_audio
-
-    def write_audio_data(self, recorded_audio, i):
-        wav.write(file[i], sample_rate, recorded_audio)
-
-    def read_audio_data(self):
-        opened_recording = wave.open(file[i], 'r')
-        audio_data_frames = opened_recording.readframes(num_samples)
-        opened_recording.close()
-        return audio_data_frames
 
     def process_input_audio(self, audio_data):
         audio_data = struct.unpack('{n}h'.format(n=num), audio_data)
@@ -235,16 +233,10 @@ class Mainclass:
         plt.ylim(0.1, 10000)
         plt.show()
 
-    def clear_files(self, file_list):
-        for i in range(len(file_list)):
-            os.remove(file_list[i])  # was just file
-
     def start_analysing(self):
         frequency_list = Mainclass().determine_frequency_list()
         try:
             for i in range(len(frequency_list)):
-
-                Mainclass().append_frequency_list_name(frequency_list[i])
                 produced_sinewave = Mainclass.produce_sinewave(self, frequency=frequency_list[i])
                 root.update_idletasks()
 
@@ -265,10 +257,6 @@ class Mainclass:
         except ValueError:
             print('Make sure your frequency list only contains a\n number followed by a comma up to the last frequency')
 
-        try:
-            Mainclass().clear_files(file_list=file)
-        except:
-            pass
         print("-----------End------------\n")
 
         Mainclass.display_graph(self, frequency_list=frequency_list)
