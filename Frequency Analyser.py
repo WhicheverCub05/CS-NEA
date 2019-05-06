@@ -222,7 +222,7 @@ class Mainclass:
 
         plt.legend(bbox_to_anchor=(0, 1), loc=2, borderaxespad=0., fontsize='small', ncol=5)
         plt.title("Frequencies found")
-        plt.xlabel('Frequencies/Hz')
+        plt.xlabel('Frequencies/Hz /10')
         plt.ylabel('Amplitude')
 
     def display_graph(self, frequency_list):
