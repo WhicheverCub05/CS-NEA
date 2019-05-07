@@ -6,14 +6,11 @@ import matplotlib.pyplot as plt
 from tkinter import *
 import re
 
-
 default_frequency_list = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
-
 sample_rate = 48000
-sd.default.channels = 1
 sd.default.samplerate = sample_rate
 num_samples = sample_rate
-sampling_rate = sample_rate
+sd.default.channels = 1
 root = Tk()
 frequency_checkbox_state = IntVar()
 user_input_list = StringVar()
@@ -136,7 +133,7 @@ class UI:
             print("Only use numbers, spaces and commas in your list")
             print('---------------------------')
 
-        elif not StringVar.get(user_input_list).strip()and frequency_checkbox_state.get() == 1:
+        elif not StringVar.get(user_input_list).strip() and frequency_checkbox_state.get() == 1:
             print('---------------------------')
             print("Make sure to input a list if the checkbox is ticked")
             print('---------------------------')
@@ -215,7 +212,7 @@ class Mainclass:
     def plot_fft_graph(self, input_frequency, audio_data):
         plt.xscale('log')
         plt.yscale('log')
-        print("The highest recorded frequency is {} Hz\n".format(np.argmax(audio_data[0:30000])))
+        print("The highest recorded frequency is {} Hz\n".format(np.argmax(audio_data[0:20000])))
         min_plot_for_frequency = int((input_frequency - input_frequency / 10))
         max_plot_for_frequency = int((input_frequency + input_frequency / 10))
         plt.plot(audio_data[min_plot_for_frequency:max_plot_for_frequency], label=("{} Hz".format(input_frequency)))
@@ -245,10 +242,6 @@ class Mainclass:
                 audio_data_frames = Mainclass.process_input_audio(self, audio_data=recorded_audio)
 
                 Mainclass.plot_fft_graph(self, input_frequency=frequency_list[i], audio_data=audio_data_frames)
-
-        except FileNotFoundError:
-            print('Make sure audio files in use are not being deleted\n '
-                  'try restarting program with with a functioning input')
 
         except sd.PortAudioError:
             print('Make sure your microphone is plugged into your device\n '
